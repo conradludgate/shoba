@@ -27,6 +27,9 @@ class Vec2:
 	def __mul__(self, scale: float) -> Vec2:
 		return Vec2(self.x * scale, self.y * scale)
 
+	def __truediv__(self, scale: float) -> Vec2:
+		return Vec2(self.x / scale, self.y / scale)
+
 	def __iadd__(self, other: Vec2):
 		self.x += other.x
 		self.y += other.y
@@ -42,8 +45,17 @@ class Vec2:
 		self.y *= scale
 		return self
 
+	def __itruediv__(self, scale: float):
+		self.x /= scale
+		self.y /= scale
+		return self
+
 	def __str__(self) -> str:
 		return "Vec2(x: {0}, y: {1})".format(self.x, self.y)
+
+	# Coefficient wise mult
+	def __and__(self, other: Vec2) -> Vec2:
+		return Vec2(self.x * other.x, self.y * other.y)
 
 	@property
 	def norm(self) -> float:
@@ -95,17 +107,28 @@ class Camera(Surface):
 
 	def get_game_pos(self, pos: Tuple[int, int]) -> Vec2:
 		(w, h) = self.screen.get_size()
-		p = Vec2(pos[0] / self.zoom / w, pos[1] / self.zoom / h)
+
+		p = Vec2((pos[0] - 0.5) / self.zoom / w, (pos[1] - 0.5) / self.zoom / h)
 		return p + self.pos
 
 	def get_screen_pos(self, p: Vec2) -> Tuple[int, int]:
 		(w, h) = self.screen.get_size()
+
 		location = p - self.pos
+		location.y *= -1
+		location += Vec2(1/2, 1/2)
+
+		# print(p, location * self.zoom * w)
+
 		return int(location.x * self.zoom * w), int(location.y * self.zoom * h)
 
 	def get_screen_size(self, size: Vec2):
 		(w, h) = self.screen.get_size()
 		return Rect(0, 0, size.x * self.zoom * w, size.y * self.zoom * h)
+
+	def get_screen_length(self, size: float) -> int:
+		(w, _) = self.screen.get_size()
+		return int(size * self.zoom * w)
 
 	def circle(self, colour: Color, center: Vec2, radius: float, width: float=0):
 		size = self.get_screen_size(Vec2(radius, width))
@@ -115,13 +138,14 @@ class Camera(Surface):
 
 	def rect(self, colour: Color, pos: Vec2, size: Vec2, width: float=0):
 		
+		# Draw from the center of the rectangle
+		pos -= Vec2(1, -1) & size / 2
+
 		s = self.get_screen_size(size)
 		(x, y) = self.get_screen_pos(pos)
-		# print("bar", x, y)
+
 		s.move_ip(x, y)
 
-		# print(s)
+		size = self.get_screen_length(width)
 
-		size = self.get_screen_size(Vec2(width, 0))
-
-		rect(self.screen, colour, s, size.w)
+		rect(self.screen, colour, s, size)

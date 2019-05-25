@@ -44,6 +44,8 @@ class Arena(Scene):
 		if keys[K_UP]: 		vec += Vec2( 0,  1)
 		if keys[K_DOWN]: 	vec += Vec2( 0, -1)
 
+		# Move a constant distance in the direction specified
+		# Proportional to the screen zoom
 		vec.set_length(0.05 * (2 ** -self.zoom_pow))
 
 		self.screen.pos += vec
@@ -55,9 +57,11 @@ class Arena(Scene):
 
 	def draw(self):
 		# (w, h) = self.screen.get_size()
-		self.screen.rect((255, 255, 255), Vec2(0.1, 0.1), Vec2(0.1, 0.2))
+		self.screen.rect((255, 255, 255), Vec2(0.1, 0.1), Vec2(0.1, 0.1))
+		self.screen.rect((  0,   0, 255), Vec2(-0.1, -0.1), Vec2(0.1, 0.1))
 
 		# p = self.screen.get_game_pos(mouse.get_pos())
 		p = Vec2(0.5, 0.5) + Vec2(cos(self.theta), sin(self.theta)) * 0.25
 
 		self.screen.circle((255, 0, 0), p, 0.05)
+		self.screen.circle((0, 255, 0), Vec2(0, 0), 0.01)

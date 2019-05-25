@@ -1,5 +1,3 @@
-from typing import Optional
-
 import sys
 
 # type: ignore
